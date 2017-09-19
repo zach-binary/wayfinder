@@ -19,6 +19,12 @@ polyline {
 
 circle {
   stroke-width: 2;
+  cursor: pointer;
+}
+
+circle.red:hover {
+  fill: green;
+  stroke: green;
 }
 
 svg text {
