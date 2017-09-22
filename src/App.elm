@@ -24,7 +24,7 @@ type alias Edge =
 
 type alias Vertex =
     { node:Node 
-    , edges:List Int
+    , neighbors:List Int
     }
 
 type alias Graph =
@@ -32,8 +32,8 @@ type alias Graph =
     , edges:List Edge
     }
 
-getNode: Graph -> Int -> Maybe Vertex
-getNode graph id =
+vertexFor: Graph -> Int -> Maybe Vertex
+vertexFor graph id =
     let
         node = 
             List.head (List.filter (\node -> node.id == id) graph.nodes)
@@ -43,13 +43,13 @@ getNode graph id =
     in
         case node of
             Just node ->
-                Just (Vertex node (List.map (getConnectedNode node) edges))
+                Just (Vertex node (List.map (neighborsFor node) edges))
             
             Nothing ->
                 Nothing
 
-getConnectedNode: Node -> Edge -> Int 
-getConnectedNode node edge =
+neighborsFor: Node -> Edge -> Int 
+neighborsFor node edge =
     if edge.to == node.id then edge.from
     else if edge.from == node.id then edge.to
     else -1
@@ -120,14 +120,14 @@ update msg model =
 -- return the path that has the least number of nodes
 findPath: Graph -> Int -> List Int -> Int -> List Int
 findPath graph goal visited id =
-    case (getNode graph id, List.member id visited) of
+    case (vertexFor graph id, List.member id visited) of
         (Just node, False) ->
             let
                 path = List.head 
                     <| List.sortBy List.length 
                     <| List.filter (List.member goal)
                     <| List.map (findPath graph goal <| id :: visited) 
-                    <| node.edges
+                    <| node.neighbors
             in
                 case path of 
                     Just path -> path
@@ -161,7 +161,7 @@ renderPath model =
         test = List.map (\node -> { node | color = "green" })
             <| List.map (\v -> v.node) 
             <| List.filterMap identity
-            <| List.map (getNode model.graph) model.path
+            <| List.map (vertexFor model.graph) model.path
     in
         Svg.g [] (List.map renderNode test)
 
