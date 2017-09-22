@@ -5,7 +5,6 @@ import Html.Events exposing (onClick)
 import Svg exposing (svg, polyline, circle)
 import Svg.Attributes as Svg exposing (..)
 import Debug exposing (log)
-import Tuple exposing (first)
 
 ---- MODEL ----
 
@@ -117,43 +116,25 @@ update msg model =
                 ( { model | path = findPath model.graph model.destination.id [] node.id }, Cmd.none )
 
 
--- find all edges connecting to start
--- find all nodes on the other end of those edges
--- check if they match end
--- if not, for each new node, find all edges connected to them
--- repeat
-
--- pick edge and follow branch until hitting a "red" node
--- if red node == end, finish
+-- starting at id, explore each node connected to it until we find goal
+-- return the path that has the least number of nodes
 findPath: Graph -> Int -> List Int -> Int -> List Int
 findPath graph goal visited id =
-    if List.member id visited then visited
-    else
-        let
-            node = 
-                getNode graph id
+    case (getNode graph id, List.member id visited) of
+        (Just node, False) ->
+            let
+                path = List.head 
+                    <| List.sortBy List.length 
+                    <| List.filter (List.member goal)
+                    <| List.map (findPath graph goal <| id :: visited) 
+                    <| node.edges
+            in
+                case path of 
+                    Just path -> path
+                    Nothing -> []
 
-            explore = 
-                findPath graph goal <| id :: visited
-            
-            isPath path =
-                List.member goal path
-        in
-            case node of
-                Just node ->
-                    let
-                        path = List.head (List.sortBy List.length 
-                            <| List.filter isPath (List.map explore node.edges))
-                    in
-                        case path of 
-                            Just path -> path
-                            Nothing -> []
+        _ -> visited -- end of the traversal, visited is the "path"
 
-                Nothing -> []
-
-
-
-            
 
 ---- VIEW ----
 
@@ -177,12 +158,12 @@ renderGraph graph =
 renderPath: Model -> Svg.Svg Msg
 renderPath model =
     let
-        vertices = List.map (getNode model.graph) model.path
-        justVertices = List.filterMap identity vertices
-        nodes = List.map (\v -> v.node) justVertices
-        greenNodes = List.map (\node -> { node | color = "green" }) nodes
+        test = List.map (\node -> { node | color = "green" })
+            <| List.map (\v -> v.node) 
+            <| List.filterMap identity
+            <| List.map (getNode model.graph) model.path
     in
-        Svg.g [] (List.map renderNode greenNodes)
+        Svg.g [] (List.map renderNode test)
 
 
 renderEdge: List Node -> Edge -> Svg.Svg Msg
