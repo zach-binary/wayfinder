@@ -1,6 +1,6 @@
 module App exposing (..)
 
-import Html exposing (Html, text, div, img)
+import Html exposing (Html, text, div, img, h1)
 import Html.Events exposing (onClick)
 import Svg exposing (svg, polyline, circle)
 import Svg.Attributes as Svg exposing (..)
@@ -56,10 +56,17 @@ neighborsFor node edge =
 
 type alias Model =
     { graph:Graph
-    , destination:Node
+    , destination:Maybe Node
     , path:List Int
+    , floor:String
     }
 
+type alias Floor = 
+    { graph:Graph 
+    , destination:Maybe Node
+    , path:List Int
+    , name:String
+    }
 
 init : String -> ( Model, Cmd Msg )
 init path =
@@ -67,9 +74,14 @@ init path =
         { nodes = nodes 
         , edges = edges
         }
-      , destination = Node -1 "" "" 0 0
+      , destination = Nothing
       , path = []
+      , floor = "Floor 1"
       }, Cmd.none )
+
+-- floors: List Floor
+-- floors = 
+--     [ Floor (Graph nodes edges)  ]
 
 nodes: List Node
 nodes = 
@@ -107,13 +119,14 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case log "Msg" msg of 
         NewDestination node ->
-            ( { model | destination = node }, Cmd.none )
+            ( { model | destination = Just node }, Cmd.none )
 
         FindPath node ->
-            if model.destination.id == -1 then 
-                ( model, Cmd.none )
-            else
-                ( { model | path = findPath model.graph model.destination.id [] node.id }, Cmd.none )
+            case model.destination of
+                Just destination ->
+                    ( { model | path = findPath model.graph destination.id [] node.id }, Cmd.none )
+                Nothing ->
+                    ( model, Cmd.none )
 
 
 -- starting at id, explore each node connected to it until we find goal
@@ -142,11 +155,15 @@ findPath graph goal visited id =
 view : Model -> Html Msg
 view model =
     div []
-        [ svg [ Svg.width "640", Svg.height "480" ] 
+        [ h1 [] [ text model.floor ]
+        , svg [ Svg.width "640", Svg.height "480" ] 
             [ renderGraph model.graph
             , renderPath model
             ]
-        , div [] [ text model.destination.name ]
+        , div [] 
+            [ 
+            ]
+        , div [] [ text <| Maybe.withDefault "" (Maybe.map .name model.destination) ]
         , div [] [ text (toString model.path)]
         ]
 
@@ -159,7 +176,7 @@ renderPath: Model -> Svg.Svg Msg
 renderPath model =
     let
         test = List.map (\node -> { node | color = "green" })
-            <| List.map (\v -> v.node) 
+            <| List.map .node
             <| List.filterMap identity
             <| List.map (vertexFor model.graph) model.path
     in
