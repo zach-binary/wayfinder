@@ -1,10 +1,10 @@
 module App exposing (..)
 
-import Html exposing (Html, text, div, img, h1, ul, li)
-import Html.Events exposing (onClick)
-import Svg exposing (svg, polyline, circle)
-import Svg.Attributes as Svg exposing (..)
 import Debug exposing (log)
+import Html exposing (Html, div, h1, img, li, text, ul)
+import Html.Events exposing (onClick)
+import Svg exposing (circle, polyline, svg)
+import Svg.Attributes as Svg exposing (..)
 
 
 ---- MODEL ----
@@ -47,12 +47,12 @@ vertexFor graph id =
         edges =
             List.filter (\edge -> edge.to == id || edge.from == id) graph.edges
     in
-        case node of
-            Just node ->
-                Just (Vertex node (List.map (neighborsFor node) edges))
+    case node of
+        Just node ->
+            Just (Vertex node (List.map (neighborsFor node) edges))
 
-            Nothing ->
-                Nothing
+        Nothing ->
+            Nothing
 
 
 neighborsFor : Node -> Edge -> Int
@@ -66,8 +66,7 @@ neighborsFor node edge =
 
 
 type alias Model =
-    { graph : Graph
-    , destination : Maybe Node
+    { destination : Maybe Node
     , path : List Int
     , floor : Maybe Floor
     , floors : List Floor
@@ -84,11 +83,7 @@ type alias Floor =
 
 init : String -> ( Model, Cmd Msg )
 init path =
-    ( { graph =
-            { nodes = nodes
-            , edges = edges
-            }
-      , destination = Nothing
+    ( { destination = Nothing
       , path = []
       , floor = List.head floors
       , floors = floors
@@ -111,47 +106,69 @@ floors =
             , Node 7 "black" "" 400 240
             ]
         , edges =
-            []
+            [ Edge "red" 1 0
+            , Edge "red" 1 2
+            , Edge "black" 4 7
+            , Edge "black" 7 5
+            , Edge "black" 1 4
+            , Edge "red" 5 3
+            , Edge "black" 7 6
+            , Edge "red" 3 6
+            ]
         }
         Nothing
         []
         "Floor 1"
     , Floor
-        (Graph nodes edges)
+        { nodes =
+            [ Node 0 "red" "ICU" 40 120
+            , Node 1 "black" "" 40 180
+            , Node 2 "red" "Room 1111" 100 180
+            , Node 3 "red" "Cafe" 600 60
+            , Node 4 "black" "" 40 240
+            , Node 5 "black" "" 600 240
+            , Node 6 "black" "" 400 60
+            , Node 7 "black" "" 400 240
+            ]
+        , edges =
+            [ Edge "red" 1 0
+            , Edge "red" 1 2
+            , Edge "black" 4 7
+            , Edge "black" 7 5
+            , Edge "black" 1 4
+            , Edge "red" 5 3
+            , Edge "black" 7 6
+            , Edge "red" 3 6
+            ]
+        }
         Nothing
         []
         "Floor 2"
     , Floor
-        (Graph nodes edges)
+        { nodes =
+            [ Node 0 "red" "ICU" 40 120
+            , Node 1 "black" "" 40 180
+            , Node 2 "red" "Room 1111" 100 180
+            , Node 3 "red" "Cafe" 600 60
+            , Node 4 "black" "" 40 240
+            , Node 5 "black" "" 600 240
+            , Node 6 "black" "" 400 60
+            , Node 7 "black" "" 400 240
+            ]
+        , edges =
+            [ Edge "red" 1 0
+            , Edge "red" 1 2
+            , Edge "black" 4 7
+            , Edge "black" 7 5
+            , Edge "black" 1 4
+            , Edge "red" 5 3
+            , Edge "black" 7 6
+            , Edge "red" 3 6
+            ]
+        }
         Nothing
         []
         "Floor 3"
-    ]
-
-
-nodes : List Node
-nodes =
-    [ Node 0 "red" "ICU" 40 120
-    , Node 1 "black" "" 40 180
-    , Node 2 "red" "Room 1111" 100 180
-    , Node 3 "red" "Cafe" 600 60
-    , Node 4 "black" "" 40 240
-    , Node 5 "black" "" 600 240
-    , Node 6 "black" "" 400 60
-    , Node 7 "black" "" 400 240
-    ]
-
-
-edges : List Edge
-edges =
-    [ Edge "red" 1 0
-    , Edge "red" 1 2
-    , Edge "black" 4 7
-    , Edge "black" 7 5
-    , Edge "black" 1 4
-    , Edge "red" 5 3
-    , Edge "black" 7 6
-    , Edge "red" 3 6
     ]
 
 
@@ -172,11 +189,11 @@ update msg model =
             ( { model | destination = Just node }, Cmd.none )
 
         FindPath node ->
-            case model.destination of
-                Just destination ->
-                    ( { model | path = findPath model.graph destination.id [] node.id }, Cmd.none )
+            case ( model.destination, model.floor ) of
+                ( Just destination, Just floor ) ->
+                    ( { model | path = findPath floor.graph destination.id [] node.id }, Cmd.none )
 
-                Nothing ->
+                _ ->
                     ( model, Cmd.none )
 
         ChangeFloor floor ->
@@ -200,12 +217,12 @@ findPath graph goal visited id =
                                 List.map (findPath graph goal <| id :: visited) <|
                                     node.neighbors
             in
-                case path of
-                    Just path ->
-                        path
+            case path of
+                Just path ->
+                    path
 
-                    Nothing ->
-                        []
+                Nothing ->
+                    []
 
         _ ->
             visited
@@ -248,9 +265,9 @@ renderFloorList floors =
         floorLink floor =
             li [] [ Html.a [ onClick (ChangeFloor floor) ] [ text floor.name ] ]
     in
-        Html.nav []
-            [ ul [ class "floors" ] <| List.map floorLink floors
-            ]
+    Html.nav []
+        [ ul [ class "floors" ] <| List.map floorLink floors
+        ]
 
 
 renderDestination : Maybe Node -> Html Msg
@@ -280,7 +297,7 @@ renderPath floor path =
                     List.filterMap identity <|
                         List.map (vertexFor floor.graph) path
     in
-        Svg.g [] (List.map renderNode test)
+    Svg.g [] (List.map renderNode test)
 
 
 renderEdge : List Node -> Edge -> Svg.Svg Msg
@@ -296,41 +313,41 @@ renderEdge nodes edge =
             case ( to_, from_ ) of
                 ( Just to_, Just from_ ) ->
                     Just
-                        { x1 = (toString to_.x)
-                        , y1 = (toString to_.y)
-                        , x2 = (toString from_.x)
-                        , y2 = (toString from_.y)
+                        { x1 = toString to_.x
+                        , y1 = toString to_.y
+                        , x2 = toString from_.x
+                        , y2 = toString from_.y
                         }
 
                 _ ->
                     Nothing
     in
-        case path_ of
-            Nothing ->
-                Svg.text ""
+    case path_ of
+        Nothing ->
+            Svg.text ""
 
-            Just aPath ->
-                Svg.g []
-                    [ Svg.line
-                        [ Svg.x1 aPath.x1
-                        , Svg.y1 aPath.y1
-                        , Svg.x2 aPath.x2
-                        , Svg.y2 aPath.y2
-                        , Svg.stroke edge.color
-                        , Svg.strokeWidth "2"
-                        ]
-                        []
+        Just aPath ->
+            Svg.g []
+                [ Svg.line
+                    [ Svg.x1 aPath.x1
+                    , Svg.y1 aPath.y1
+                    , Svg.x2 aPath.x2
+                    , Svg.y2 aPath.y2
+                    , Svg.stroke edge.color
+                    , Svg.strokeWidth "2"
                     ]
+                    []
+                ]
 
 
 renderNode : Node -> Svg.Svg Msg
 renderNode node =
     let
         cx_ =
-            (toString node.x)
+            toString node.x
 
         cy_ =
-            (toString node.y)
+            toString node.y
 
         textX =
             toString (node.x + 15)
@@ -346,19 +363,19 @@ renderNode node =
                 _ ->
                     FindPath node
     in
-        Svg.g []
-            [ circle
-                [ Svg.cx cx_
-                , Svg.cy cy_
-                , Svg.r "10"
-                , Svg.stroke node.color
-                , Svg.fill node.color
-                , onClick onNodeClick
-                , Svg.class node.color
-                ]
-                []
-            , Svg.text_ [ Svg.x textX, Svg.y textY ] [ text node.name ]
+    Svg.g []
+        [ circle
+            [ Svg.cx cx_
+            , Svg.cy cy_
+            , Svg.r "10"
+            , Svg.stroke node.color
+            , Svg.fill node.color
+            , onClick onNodeClick
+            , Svg.class node.color
             ]
+            []
+        , Svg.text_ [ Svg.x textX, Svg.y textY ] [ text node.name ]
+        ]
 
 
 
