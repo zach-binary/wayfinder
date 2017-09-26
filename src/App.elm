@@ -1,6 +1,6 @@
 module App exposing (..)
 
-import Html exposing (Html, text, div, img, h1)
+import Html exposing (Html, text, div, img, h1, ul, li)
 import Html.Events exposing (onClick)
 import Svg exposing (svg, polyline, circle)
 import Svg.Attributes as Svg exposing (..)
@@ -58,7 +58,8 @@ type alias Model =
     { graph:Graph
     , destination:Maybe Node
     , path:List Int
-    , floor:String
+    , floor:Maybe Floor
+    , floors:List Floor
     }
 
 type alias Floor = 
@@ -76,12 +77,41 @@ init path =
         }
       , destination = Nothing
       , path = []
-      , floor = "Floor 1"
+      , floor = List.head floors
+      , floors = floors
       }, Cmd.none )
 
--- floors: List Floor
--- floors = 
---     [ Floor (Graph nodes edges)  ]
+floors: List Floor
+floors = 
+    [ Floor 
+        { nodes =
+          [ Node 0 "red" "ICU" 40 120
+            , Node 1 "black" "" 40 180
+            , Node 2 "red" "Room 1111" 100 180
+            , Node 3 "red" "Cafe" 600 60
+            , Node 4 "black" "" 40 240
+            , Node 5 "black" "" 600 240
+            , Node 6 "black" "" 400 60
+            , Node 7 "black" "" 400 240
+            ]
+        , edges =
+          [
+          ]
+        }
+        Nothing 
+        [] 
+        "Floor 1" 
+    , Floor 
+        (Graph nodes edges) 
+        Nothing 
+        [] 
+        "Floor 2" 
+    , Floor 
+        (Graph nodes edges) 
+        Nothing 
+        [] 
+        "Floor 3" 
+    ]
 
 nodes: List Node
 nodes = 
@@ -113,6 +143,7 @@ edges =
 type Msg
     = NewDestination Node
     | FindPath Node
+    | ChangeFloor Floor
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -127,6 +158,9 @@ update msg model =
                     ( { model | path = findPath model.graph destination.id [] node.id }, Cmd.none )
                 Nothing ->
                     ( model, Cmd.none )
+
+        ChangeFloor floor ->
+            ( { model | floor = Just floor }, Cmd.none)
 
 
 -- starting at id, explore each node connected to it until we find goal
@@ -155,30 +189,56 @@ findPath graph goal visited id =
 view : Model -> Html Msg
 view model =
     div []
-        [ h1 [] [ text model.floor ]
-        , svg [ Svg.width "640", Svg.height "480" ] 
-            [ renderGraph model.graph
-            , renderPath model
-            ]
-        , div [] 
-            [ 
-            ]
-        , div [] [ text <| Maybe.withDefault "" (Maybe.map .name model.destination) ]
+        [ renderFloor model
+        , renderDestination model.destination
+        , renderFloorList model.floors
         , div [] [ text (toString model.path)]
         ]
+
+renderFloor: Model -> Html Msg
+renderFloor model =
+    case model.floor of 
+        Just floor ->
+            div []
+                [ h1 [] [ text floor.name ]
+                , svg [ Svg.width "640", Svg.height "480" ] 
+                    [ renderGraph floor.graph
+                    , renderPath floor model.path
+                    ]
+                ]
+        Nothing ->
+            div [] [ text "No floor, something has gone wrong...!" ]
+
+renderFloorList: List Floor -> Html Msg
+renderFloorList floors =
+    let
+        floorLink floor =
+            li [] [ Html.a [ onClick (ChangeFloor floor) ] [ text floor.name ] ]
+    in 
+        Html.nav []
+            [ ul [ class "floors" ] <| List.map floorLink floors
+            ]
+
+renderDestination: Maybe Node -> Html Msg
+renderDestination destination =
+    case destination of
+        Just node ->
+            div [] [ text node.name ]
+        Nothing -> 
+            div [] []
 
 renderGraph: Graph -> Svg.Svg Msg
 renderGraph graph =
     Svg.g [] (List.append (List.map (renderEdge graph.nodes) graph.edges)
                           (List.map renderNode graph.nodes))
 
-renderPath: Model -> Svg.Svg Msg
-renderPath model =
+renderPath: Floor -> List Int -> Svg.Svg Msg
+renderPath floor path =
     let
         test = List.map (\node -> { node | color = "green" })
             <| List.map .node
             <| List.filterMap identity
-            <| List.map (vertexFor model.graph) model.path
+            <| List.map (vertexFor floor.graph) path
     in
         Svg.g [] (List.map renderNode test)
 

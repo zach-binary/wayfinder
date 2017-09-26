@@ -30,3 +30,14 @@ circle.red:hover {
 svg text {
   font-size: 12px;
 }
+
+ul.floors {
+  list-style: none;
+  padding: 0;
+}
+
+ul.floors a {
+  cursor: pointer;
+  color: blue;
+  text-decoration: underline;
+}
