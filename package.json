@@ -26,7 +26,6 @@
     "css-loader": "^0.28.0",
     "dotenv": "^4.0.0",
     "elm": "^0.18.0",
-    "elm-format": "^0.6.1-alpha",
     "elm-hot-loader": "0.5.4",
     "elm-test": "0.18.2",
     "elm-webpack-loader": "^4.3.0",
