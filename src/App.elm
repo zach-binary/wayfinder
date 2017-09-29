@@ -128,6 +128,7 @@ floors =
             , Node 5 "black" "" 600 240
             , Node 6 "black" "" 400 60
             , Node 7 "black" "" 400 240
+            , Node 8 "yellow" "Elevator Floor 1" 400 300
             ]
         , edges =
             [ Edge "red" 1 0
@@ -138,6 +139,7 @@ floors =
             , Edge "red" 5 3
             , Edge "black" 7 6
             , Edge "red" 3 6
+            , Edge "yellow" 8 7
             ]
         }
         Nothing
@@ -145,24 +147,26 @@ floors =
         "Floor 1"
     , Floor
         { nodes =
-            [ Node 0 "red" "Room 2112" 40 120
-            , Node 1 "black" "" 40 180
-            , Node 2 "red" "Room 2111" 100 180
-            , Node 3 "red" "Room 2500" 500 60
-            , Node 4 "black" "" 40 240
-            , Node 5 "black" "" 600 240
-            , Node 6 "black" "" 400 60
-            , Node 7 "black" "" 400 240
+            [ Node 100 "red" "Room 2112" 40 120
+            , Node 101 "black" "" 40 180
+            , Node 102 "red" "Room 2111" 100 180
+            , Node 103 "red" "Room 2500" 500 60
+            , Node 104 "black" "" 40 240
+            , Node 105 "black" "" 600 240
+            , Node 106 "black" "" 400 60
+            , Node 107 "black" "" 400 240
+            , Node 108 "yellow" "Elevator Floor 2" 400 300
             ]
         , edges =
-            [ Edge "red" 1 0
-            , Edge "red" 1 2
-            , Edge "black" 4 7
-            , Edge "black" 7 5
-            , Edge "black" 1 4
-            , Edge "red" 5 3
-            , Edge "black" 7 6
-            , Edge "red" 3 6
+            [ Edge "red" 101 100
+            , Edge "red" 101 102
+            , Edge "black" 104 107
+            , Edge "black" 107 105
+            , Edge "black" 101 104
+            , Edge "red" 105 103
+            , Edge "black" 107 106
+            , Edge "red" 103 106
+            , Edge "yellow" 108 107
             ]
         }
         Nothing
@@ -170,24 +174,26 @@ floors =
         "Floor 2"
     , Floor
         { nodes =
-            [ Node 0 "red" "ICU" 40 120
-            , Node 1 "black" "" 40 180
-            , Node 2 "red" "Room 1111" 100 180
-            , Node 3 "red" "Cafe" 600 60
-            , Node 4 "black" "" 40 240
-            , Node 5 "black" "" 600 240
-            , Node 6 "black" "" 400 60
-            , Node 7 "black" "" 400 240
+            [ Node 200 "red" "ICU" 40 120
+            , Node 201 "black" "" 40 180
+            , Node 202 "red" "Room 1111" 100 180
+            , Node 203 "red" "Cafe" 600 60
+            , Node 204 "black" "" 40 240
+            , Node 205 "black" "" 600 240
+            , Node 206 "black" "" 400 60
+            , Node 207 "black" "" 400 240
+            , Node 208 "yellow" "Elevator Floor 3" 400 300
             ]
         , edges =
-            [ Edge "red" 1 0
-            , Edge "red" 1 2
-            , Edge "black" 4 7
-            , Edge "black" 7 5
-            , Edge "black" 1 4
-            , Edge "red" 5 3
-            , Edge "black" 7 6
-            , Edge "red" 3 6
+            [ Edge "red" 201 200
+            , Edge "red" 201 202
+            , Edge "black" 204 207
+            , Edge "black" 207 205
+            , Edge "black" 201 204
+            , Edge "red" 205 203
+            , Edge "black" 207 206
+            , Edge "red" 203 206
+            , Edge "yellow" 208 207
             ]
         }
         Nothing
