@@ -2,9 +2,12 @@ module App exposing (..)
 
 import Debug exposing (log)
 import Html exposing (Html, div, h1, img, li, text, ul)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (placeholder)
+import Html.Events exposing (onClick, onInput)
+import String
 import Svg exposing (circle, polyline, svg)
 import Svg.Attributes as Svg exposing (..)
+import Tuple
 
 
 ---- MODEL ----
@@ -70,6 +73,7 @@ type alias Model =
     , path : List Int
     , floor : Maybe Floor
     , floors : List Floor
+    , rooms : List Node
     }
 
 
@@ -81,12 +85,32 @@ type alias Floor =
     }
 
 
+type alias RoomName =
+    String
+
+
+searchRoom : String -> List Floor -> List Node
+searchRoom room floors =
+    let
+        strippedSearchTerm =
+            String.trim room |> String.toLower
+
+        search graph =
+            List.filter (\node -> String.contains strippedSearchTerm <| String.toLower node.name) graph.nodes
+    in
+    if String.isEmpty room then
+        []
+    else
+        List.concat <| List.map search <| List.map .graph floors
+
+
 init : String -> ( Model, Cmd Msg )
 init path =
     ( { destination = Nothing
       , path = []
       , floor = List.head floors
       , floors = floors
+      , rooms = []
       }
     , Cmd.none
     )
@@ -121,10 +145,10 @@ floors =
         "Floor 1"
     , Floor
         { nodes =
-            [ Node 0 "red" "ICU" 40 120
+            [ Node 0 "red" "Room 2112" 40 120
             , Node 1 "black" "" 40 180
-            , Node 2 "red" "Room 1111" 100 180
-            , Node 3 "red" "Cafe" 600 60
+            , Node 2 "red" "Room 2111" 100 180
+            , Node 3 "red" "Room 2500" 500 60
             , Node 4 "black" "" 40 240
             , Node 5 "black" "" 600 240
             , Node 6 "black" "" 400 60
@@ -180,6 +204,7 @@ type Msg
     = NewDestination Node
     | FindPath Node
     | ChangeFloor Floor
+    | SearchRooms RoomName
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -197,7 +222,10 @@ update msg model =
                     ( model, Cmd.none )
 
         ChangeFloor floor ->
-            ( { model | floor = Just floor }, Cmd.none )
+            ( { model | floor = Just floor, path = [] }, Cmd.none )
+
+        SearchRooms room ->
+            ( { model | rooms = searchRoom room model.floors }, Cmd.none )
 
 
 
@@ -229,7 +257,6 @@ findPath graph goal visited id =
 
 
 
--- end of the traversal, visited is the "path"
 ---- VIEW ----
 
 
@@ -238,7 +265,6 @@ view model =
     div []
         [ renderFloor model
         , renderDestination model.destination
-        , renderFloorList model.floors
         , div [] [ text (toString model.path) ]
         ]
 
@@ -247,16 +273,43 @@ renderFloor : Model -> Html Msg
 renderFloor model =
     case model.floor of
         Just floor ->
-            div []
-                [ h1 [] [ text floor.name ]
-                , svg [ Svg.width "640", Svg.height "480" ]
-                    [ renderGraph floor.graph
-                    , renderPath floor model.path
+            Html.fieldset []
+                [ Html.legend [] [ text floor.name ]
+                , div [ class "floor-info" ]
+                    [ svg [ Svg.width "640", Svg.height "480" ]
+                        [ renderGraph floor.graph
+                        , renderPath floor model.path
+                        ]
+                    , div []
+                        [ div []
+                            [ Html.input
+                                [ placeholder "Search for a room"
+                                , onInput SearchRooms
+                                ]
+                                []
+                            , renderSearch model.rooms
+                            ]
+                        , renderFloorList model.floors
+                        ]
                     ]
                 ]
 
         Nothing ->
             div [] [ text "No floor, something has gone wrong...!" ]
+
+
+renderSearch : List Node -> Html Msg
+renderSearch rooms =
+    let
+        result room =
+            li [ onClick <| NewDestination room ] [ text room.name ]
+    in
+    case rooms of
+        [] ->
+            text ""
+
+        _ ->
+            ul [ class "room-search" ] <| List.map result rooms
 
 
 renderFloorList : List Floor -> Html Msg
@@ -356,12 +409,7 @@ renderNode node =
             toString (node.y - 15)
 
         onNodeClick =
-            case node.color of
-                "red" ->
-                    NewDestination node
-
-                _ ->
-                    FindPath node
+            FindPath node
     in
     Svg.g []
         [ circle
