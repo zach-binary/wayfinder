@@ -186,7 +186,7 @@ floors =
       -- ,
       Floor
         { nodes =
-            [ Node 200 "red" "Heart Station / Pulmonary Function Lab" 136 285
+            [ heartStation
             , Node 202 "red" "Suite 2C" 250 360
             , Node 203 "red" "Fetal Monitoring Center" 159 360
             , Node 204 "red" "Suite 2D" 119 360
@@ -218,6 +218,10 @@ floors =
         []
         "Floor 2"
     ]
+
+
+heartStation =
+    Node 200 "red" "Heart Station / Pulmonary Function Lab" 136 285
 
 
 
@@ -319,7 +323,7 @@ scanner scanning demoVideo =
         Html.video
             [ Html.Attributes.src demoVideo
             , Html.Attributes.autoplay True
-            , Html.Events.on "ended" (Json.succeed (Scan False))
+            , Html.Events.on "ended" (Json.succeed (ChangePage (Map heartStation)))
             ]
             []
 
