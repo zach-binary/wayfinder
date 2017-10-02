@@ -41,6 +41,11 @@ type alias Graph =
     }
 
 
+type Page
+    = PickDestination
+    | Map Node
+
+
 vertexFor : Graph -> Int -> Maybe Vertex
 vertexFor graph id =
     let
@@ -74,6 +79,7 @@ type alias Model =
     , floor : Maybe Floor
     , floors : List Floor
     , rooms : List Node
+    , page : Page
     }
 
 
@@ -111,6 +117,7 @@ init path =
       , floor = List.head floors
       , floors = floors
       , rooms = []
+      , page = PickDestination
       }
     , Cmd.none
     )
@@ -118,87 +125,94 @@ init path =
 
 floors : List Floor
 floors =
-    [ Floor
+    [ -- Floor
+      -- { nodes =
+      --     [ Node 0 "red" "ICU" 40 120
+      --     , Node 1 "black" "" 40 180
+      --     , Node 2 "red" "Room 1111" 100 180
+      --     , Node 3 "red" "Cafe" 600 60
+      --     , Node 4 "black" "" 40 240
+      --     , Node 5 "black" "" 600 240
+      --     , Node 6 "black" "" 400 60
+      --     , Node 7 "black" "" 400 240
+      --     , Node 8 "yellow" "Elevator Floor 1" 400 300
+      --     ]
+      -- , edges =
+      --     [ Edge "red" 1 0
+      --     , Edge "red" 1 2
+      --     , Edge "black" 4 7
+      --     , Edge "black" 7 5
+      --     , Edge "black" 1 4
+      --     , Edge "red" 5 3
+      --     , Edge "black" 7 6
+      --     , Edge "red" 3 6
+      --     , Edge "yellow" 8 7
+      --     ]
+      -- }
+      -- Nothing
+      -- []
+      -- "Floor 1"
+      -- , Floor
+      --     { nodes =
+      --         [ Node 100 "red" "Room 2112" 40 120
+      --         , Node 101 "black" "" 40 180
+      --         , Node 102 "red" "Room 2111" 100 180
+      --         , Node 103 "red" "Room 2500" 500 60
+      --         , Node 104 "black" "" 40 240
+      --         , Node 105 "black" "" 600 240
+      --         , Node 106 "black" "" 400 60
+      --         , Node 107 "black" "" 400 240
+      --         , Node 108 "yellow" "Elevator Floor 2" 400 300
+      --         ]
+      --     , edges =
+      --         [ Edge "red" 101 100
+      --         , Edge "red" 101 102
+      --         , Edge "black" 104 107
+      --         , Edge "black" 107 105
+      --         , Edge "black" 101 104
+      --         , Edge "red" 105 103
+      --         , Edge "black" 107 106
+      --         , Edge "red" 103 106
+      --         , Edge "yellow" 108 107
+      --         ]
+      --     }
+      --     Nothing
+      --     []
+      --     "Floor 2"
+      -- ,
+      Floor
         { nodes =
-            [ Node 0 "red" "ICU" 40 120
-            , Node 1 "black" "" 40 180
-            , Node 2 "red" "Room 1111" 100 180
-            , Node 3 "red" "Cafe" 600 60
-            , Node 4 "black" "" 40 240
-            , Node 5 "black" "" 600 240
-            , Node 6 "black" "" 400 60
-            , Node 7 "black" "" 400 240
-            , Node 8 "yellow" "Elevator Floor 1" 400 300
+            [ Node 200 "red" "Heart Station / Pulmonary Function Lab" 136 285
+            , Node 202 "red" "Suite 2C" 250 360
+            , Node 203 "red" "Fetal Monitoring Center" 159 360
+            , Node 204 "red" "Suite 2D" 119 360
+            , Node 205 "red" "EFG Lab" 248 218
+            , Node 206 "red" "Eye Center / Out Patient Lab Services" 355 240
+            , Node 207 "red" "Suite 2A Surgery / Dialysis Infusion" 568 175
+            , Node 208 "black" "" 355 358
+            , Node 209 "black" "" 355 285
+            , Node 210 "black" "" 248 285
+            , Node 211 "black" "" 248 175
+            , Node 212 "black" "" 355 175
             ]
         , edges =
-            [ Edge "red" 1 0
-            , Edge "red" 1 2
-            , Edge "black" 4 7
-            , Edge "black" 7 5
-            , Edge "black" 1 4
-            , Edge "red" 5 3
-            , Edge "black" 7 6
-            , Edge "red" 3 6
-            , Edge "yellow" 8 7
-            ]
-        }
-        Nothing
-        []
-        "Floor 1"
-    , Floor
-        { nodes =
-            [ Node 100 "red" "Room 2112" 40 120
-            , Node 101 "black" "" 40 180
-            , Node 102 "red" "Room 2111" 100 180
-            , Node 103 "red" "Room 2500" 500 60
-            , Node 104 "black" "" 40 240
-            , Node 105 "black" "" 600 240
-            , Node 106 "black" "" 400 60
-            , Node 107 "black" "" 400 240
-            , Node 108 "yellow" "Elevator Floor 2" 400 300
-            ]
-        , edges =
-            [ Edge "red" 101 100
-            , Edge "red" 101 102
-            , Edge "black" 104 107
-            , Edge "black" 107 105
-            , Edge "black" 101 104
-            , Edge "red" 105 103
-            , Edge "black" 107 106
-            , Edge "red" 103 106
-            , Edge "yellow" 108 107
+            [ Edge "red" 208 202
+            , Edge "red" 208 203
+            , Edge "red" 208 204
+            , Edge "black" 208 209
+            , Edge "black" 209 210
+            , Edge "red" 209 206
+            , Edge "red" 210 200
+            , Edge "red" 210 205
+            , Edge "red" 212 206
+            , Edge "red" 212 207
+            , Edge "black" 212 211
+            , Edge "red" 211 205
             ]
         }
         Nothing
         []
         "Floor 2"
-    , Floor
-        { nodes =
-            [ Node 200 "red" "ICU" 40 120
-            , Node 201 "black" "" 40 180
-            , Node 202 "red" "Room 1111" 100 180
-            , Node 203 "red" "Cafe" 600 60
-            , Node 204 "black" "" 40 240
-            , Node 205 "black" "" 600 240
-            , Node 206 "black" "" 400 60
-            , Node 207 "black" "" 400 240
-            , Node 208 "yellow" "Elevator Floor 3" 400 300
-            ]
-        , edges =
-            [ Edge "red" 201 200
-            , Edge "red" 201 202
-            , Edge "black" 204 207
-            , Edge "black" 207 205
-            , Edge "black" 201 204
-            , Edge "red" 205 203
-            , Edge "black" 207 206
-            , Edge "red" 203 206
-            , Edge "yellow" 208 207
-            ]
-        }
-        Nothing
-        []
-        "Floor 3"
     ]
 
 
@@ -211,6 +225,7 @@ type Msg
     | FindPath Node
     | ChangeFloor Floor
     | SearchRooms RoomName
+    | ChangePage Page
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -232,6 +247,9 @@ update msg model =
 
         SearchRooms room ->
             ( { model | rooms = searchRoom room model.floors }, Cmd.none )
+
+        ChangePage page ->
+            ( { model | page = page }, Cmd.none )
 
 
 
@@ -295,7 +313,8 @@ renderFloor model =
                                 []
                             , renderSearch model.rooms
                             ]
-                        , renderFloorList model.floors
+
+                        -- , renderFloorList model.floors
                         ]
                     ]
                 ]
@@ -342,21 +361,28 @@ renderDestination destination =
 renderGraph : Graph -> Svg.Svg Msg
 renderGraph graph =
     Svg.g []
-        (List.append (List.map (renderEdge graph.nodes) graph.edges)
-            (List.map renderNode graph.nodes)
+        (--List.append (List.map (renderEdge graph.nodes) graph.edges)
+         List.map renderNode graph.nodes
         )
 
 
 renderPath : Floor -> List Int -> Svg.Svg Msg
 renderPath floor path =
     let
-        test =
+        nodes =
             List.map (\node -> { node | color = "green" }) <|
                 List.map .node <|
                     List.filterMap identity <|
                         List.map (vertexFor floor.graph) path
+
+        edges =
+            List.map2 (Edge "green") path <| Maybe.withDefault [] (List.tail path)
     in
-    Svg.g [] (List.map renderNode test)
+    Svg.g []
+        (List.append
+            (List.map (renderEdge nodes) edges)
+            (List.map renderNode nodes)
+        )
 
 
 renderEdge : List Node -> Edge -> Svg.Svg Msg
@@ -421,14 +447,15 @@ renderNode node =
         [ circle
             [ Svg.cx cx_
             , Svg.cy cy_
-            , Svg.r "10"
+            , Svg.r "3"
             , Svg.stroke node.color
             , Svg.fill node.color
             , onClick onNodeClick
             , Svg.class node.color
             ]
             []
-        , Svg.text_ [ Svg.x textX, Svg.y textY ] [ text node.name ]
+
+        -- , Svg.text_ [ Svg.x textX, Svg.y textY ] [ text node.name ]
         ]
 
 

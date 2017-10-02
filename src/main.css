@@ -52,7 +52,8 @@ body {
 }
 
 svg {
-  background: lightgray;
+  background-image: url('./map2.jpg');
+  background-size: 100%;
   padding: 15px;
 }
 
