@@ -29,6 +29,15 @@ body {
   box-sizing: border-box;
 }
 
+.pick-destination button {
+  border: none;
+  padding: 15px;
+  width: 100%;
+  font-size: 16px;
+  background: #006EFF;
+  color: white;
+}
+
 .floor-info > div {
   position: relative;
   display: flex;

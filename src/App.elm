@@ -4,6 +4,7 @@ import Debug exposing (log)
 import Html exposing (Html, div, h1, img, li, text, ul)
 import Html.Attributes exposing (placeholder)
 import Html.Events exposing (onClick, onInput)
+import Json.Decode as Json
 import String
 import Svg exposing (circle, polyline, svg)
 import Svg.Attributes as Svg exposing (..)
@@ -79,6 +80,8 @@ type alias Model =
     , floors : List Floor
     , rooms : List Node
     , page : Page
+    , scanning : Bool
+    , demoVideo : String
     }
 
 
@@ -117,6 +120,8 @@ init path =
       , floors = floors
       , rooms = []
       , page = PickDestination
+      , scanning = False
+      , demoVideo = path
       }
     , Cmd.none
     )
@@ -224,6 +229,7 @@ type Msg
     | ChangeFloor Floor
     | SearchRooms RoomName
     | ChangePage Page
+    | Scan Bool
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -245,6 +251,9 @@ update msg model =
 
         ChangePage page ->
             ( { model | page = page, path = [], rooms = [] }, Cmd.none )
+
+        Scan scanning ->
+            ( { model | scanning = scanning }, Cmd.none )
 
 
 
@@ -292,6 +301,7 @@ view model =
                     []
                 , renderSearch model.rooms
                 , Html.p [] [ text "or scan a QR code" ]
+                , scanner model.scanning model.demoVideo
                 ]
 
         Map destination ->
@@ -299,6 +309,19 @@ view model =
                 [ renderFloor model
                 , Html.a [ onClick (ChangePage PickDestination) ] [ text "Go Back" ]
                 ]
+
+
+scanner : Bool -> String -> Html Msg
+scanner scanning demoVideo =
+    if not scanning then
+        Html.button [ onClick (Scan True) ] [ text "tap to scan" ]
+    else
+        Html.video
+            [ Html.Attributes.src demoVideo
+            , Html.Attributes.autoplay True
+            , Html.Events.on "ended" (Json.succeed (Scan False))
+            ]
+            []
 
 
 renderFloor : Model -> Html Msg

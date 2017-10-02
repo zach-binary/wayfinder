@@ -1,8 +1,8 @@
 import './main.css'
-const mapPath = require('./map.jpg')
+const sweetVideo = require('./scan-demo.mov')
 const Elm = require('./App.elm')
 
 const root = document.getElementById('root')
 
-Elm.App.embed(root, mapPath)
+Elm.App.embed(root, sweetVideo)
 
