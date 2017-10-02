@@ -15,11 +15,18 @@ body {
   justify-content: space-around;
 }
 
-.floor-info input {
+.pick-destination {
+  text-align: center;
+  padding: 15px;
+}
+
+.pick-destination input {
   padding: 12px;
   border-radius: 2px;
   border: 1px solid gray;
   font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .floor-info > div {
@@ -36,15 +43,18 @@ body {
   margin: 0;
   width: 100%;
   border: 1px solid gray;
+  border-top: none;
+  box-sizing: border-box;
 }
 
 .room-search li {
   cursor: pointer;
   color: blue;
   text-decoration: underline;
-  font-size: 14px;
-  padding: 4px;
+  font-size: 16px;
+  padding: 8px 13px;
   text-align: left;
+  box-sizing: border-box;
 }
 
 .room-search li:hover {
@@ -82,7 +92,7 @@ ul.floors {
   padding: 0;
 }
 
-ul.floors a {
+a {
   cursor: pointer;
   color: blue;
   text-decoration: underline;

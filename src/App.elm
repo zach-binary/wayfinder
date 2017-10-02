@@ -7,7 +7,6 @@ import Html.Events exposing (onClick, onInput)
 import String
 import Svg exposing (circle, polyline, svg)
 import Svg.Attributes as Svg exposing (..)
-import Tuple
 
 
 ---- MODEL ----
@@ -221,8 +220,7 @@ floors =
 
 
 type Msg
-    = NewDestination Node
-    | FindPath Node
+    = FindPath Node
     | ChangeFloor Floor
     | SearchRooms RoomName
     | ChangePage Page
@@ -231,12 +229,9 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case log "Msg" msg of
-        NewDestination node ->
-            ( { model | destination = Just node }, Cmd.none )
-
         FindPath node ->
-            case ( model.destination, model.floor ) of
-                ( Just destination, Just floor ) ->
+            case ( model.page, model.floor ) of
+                ( Map destination, Just floor ) ->
                     ( { model | path = findPath floor.graph destination.id [] node.id }, Cmd.none )
 
                 _ ->
@@ -249,7 +244,7 @@ update msg model =
             ( { model | rooms = searchRoom room model.floors }, Cmd.none )
 
         ChangePage page ->
-            ( { model | page = page }, Cmd.none )
+            ( { model | page = page, path = [], rooms = [] }, Cmd.none )
 
 
 
@@ -286,36 +281,34 @@ findPath graph goal visited id =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ renderFloor model
-        , renderDestination model.destination
-        , div [] [ text (toString model.path) ]
-        ]
+    case model.page of
+        PickDestination ->
+            div [ class "pick-destination" ]
+                [ Html.p [] [ text "Search for a room" ]
+                , Html.input
+                    [ placeholder "Search for a room"
+                    , onInput SearchRooms
+                    ]
+                    []
+                , renderSearch model.rooms
+                , Html.p [] [ text "or scan a QR code" ]
+                ]
+
+        Map destination ->
+            div []
+                [ renderFloor model
+                , Html.a [ onClick (ChangePage PickDestination) ] [ text "Go Back" ]
+                ]
 
 
 renderFloor : Model -> Html Msg
 renderFloor model =
     case model.floor of
         Just floor ->
-            Html.fieldset []
-                [ Html.legend [] [ text floor.name ]
-                , div [ class "floor-info" ]
-                    [ svg [ Svg.width "640", Svg.height "480" ]
-                        [ renderGraph floor.graph
-                        , renderPath floor model.path
-                        ]
-                    , div []
-                        [ div []
-                            [ Html.input
-                                [ placeholder "Search for a room"
-                                , onInput SearchRooms
-                                ]
-                                []
-                            , renderSearch model.rooms
-                            ]
-
-                        -- , renderFloorList model.floors
-                        ]
+            div [ class "floor-info" ]
+                [ svg [ Svg.width "640", Svg.height "480" ]
+                    [ renderGraph floor.graph
+                    , renderPath floor model.path
                     ]
                 ]
 
@@ -327,7 +320,7 @@ renderSearch : List Node -> Html Msg
 renderSearch rooms =
     let
         result room =
-            li [ onClick <| NewDestination room ] [ text room.name ]
+            li [ onClick <| ChangePage (Map room) ] [ text room.name ]
     in
     case rooms of
         [] ->
@@ -348,22 +341,9 @@ renderFloorList floors =
         ]
 
 
-renderDestination : Maybe Node -> Html Msg
-renderDestination destination =
-    case destination of
-        Just node ->
-            div [] [ text node.name ]
-
-        Nothing ->
-            div [] []
-
-
 renderGraph : Graph -> Svg.Svg Msg
 renderGraph graph =
-    Svg.g []
-        (--List.append (List.map (renderEdge graph.nodes) graph.edges)
-         List.map renderNode graph.nodes
-        )
+    Svg.g [] (List.map renderNode graph.nodes)
 
 
 renderPath : Floor -> List Int -> Svg.Svg Msg
